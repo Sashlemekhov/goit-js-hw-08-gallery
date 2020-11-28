@@ -12,7 +12,7 @@ lightboxBtnCloseRef.addEventListener('click', closeModalByClickOnBtn);
 
 // create Gallery Markup and add in DOM
 function createGalleryMarkup(galleryDataArr) {
-  return galleryDataArr.map(({preview, original, description, id}) => {
+  return galleryDataArr.map(({preview, original, description}, index) => {
     return `
       <li class="gallery__item">
         <a
@@ -23,7 +23,7 @@ function createGalleryMarkup(galleryDataArr) {
           class="gallery__image"
           src="${preview}"
           data-source="${original}"
-          data-id="${id}"
+          data-id="${index}"
           alt="${description}"
         />
         </a>
@@ -37,16 +37,17 @@ galleryListRef.insertAdjacentHTML('beforeend', createGalleryMarkup(galleryDataAr
 // open modal
 function openModalHandler(event) {
   event.preventDefault();
+
+  if (event.target.nodeName !== 'IMG') {
+    return;
+  };
+
   window.addEventListener('keydown', closeModalByEsc);
   window.addEventListener('keydown', keyboardNavigationHandler);
 
   const largeImgURL = event.target.dataset.source;
   const largeImgAlt = event.target.getAttribute('alt');
   const largeImgId = event.target.dataset.id;
-
-  if (event.target.nodeName !== 'IMG') {
-    return;
-  };
 
   lightboxRef.classList.add('is-open');
   lightboxImgRef.setAttribute('src', largeImgURL);
@@ -60,6 +61,7 @@ function closeModalHandler() {
   window.removeEventListener('keydown', keyboardNavigationHandler);
 
   lightboxImgRef.setAttribute('src', '');
+  lightboxImgRef.setAttribute('alt', '');
   lightboxRef.classList.remove('is-open');
 };
 
@@ -83,24 +85,20 @@ function closeModalByEsc(event) {
   };
 };
 
-//gallery big imaga navigation
+//gallery big image navigation
 function keyboardNavigationHandler(event) {
   let prevImgNumber = Number(lightboxImgRef.dataset.id) - 1;
   let nextImgNumber = Number(lightboxImgRef.dataset.id) + 1;
   let attributeURL = (indexOfArr) => lightboxImgRef.setAttribute('src', galleryDataArr[indexOfArr].original);
   let attributeAlt = (indexOfArr) => lightboxImgRef.setAttribute('alt', galleryDataArr[indexOfArr].description);
-  let attributeId = (indexOfArr) => lightboxImgRef.setAttribute('data-id', galleryDataArr[indexOfArr].id);
+  let attributeId = (index) => lightboxImgRef.setAttribute('data-id', index);
 
   if (nextImgNumber === galleryDataArr.length) {
-    attributeURL(0);
-    attributeAlt(0);
-    attributeId(0);
+    nextImgNumber = 0;
   };
 
   if (prevImgNumber === -1) {
-    attributeURL(galleryDataArr.length - 1);
-    attributeAlt(galleryDataArr.length - 1);
-    attributeId(galleryDataArr.length - 1);
+    prevImgNumber = galleryDataArr.length - 1;
   };
   
   if (event.code === 'KeyA' || event.code === 'ArrowLeft' || event.code === 'Numpad4') {
@@ -115,4 +113,3 @@ function keyboardNavigationHandler(event) {
     attributeId(nextImgNumber);
   };
 };
- 
